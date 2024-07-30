@@ -1,117 +1,132 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import Voice from '@react-native-voice/voice';
+import Tts from 'react-native-tts';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
+  const [inputText, setInputText] = useState('');
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  useEffect(() => {
+    Voice.onSpeechResults = onSpeechResults;
+    Tts.setDefaultLanguage('en-US');
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const onSpeechResults = (e) => {
+    setRecognizedText(e.value[0]);
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  const startListening = async () => {
+    try {
+      await Voice.start('en-US');
+      setIsListening(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const stopListening = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const speakRecognizedText = () => {
+    Tts.speak(recognizedText);
+  };
+
+  const speakInputText = () => {
+    Tts.speak(inputText);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Speech Recognition App</Text>
+        
+        <Text style={styles.subtitle}>Speech to Text:</Text>
+        <Text style={styles.text}>Recognized Text: {recognizedText}</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={isListening ? stopListening : startListening}
+        >
+          <Text style={styles.buttonText}>
+            {isListening ? 'Stop Listening' : 'Start Listening'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={speakRecognizedText}>
+          <Text style={styles.buttonText}>Speak Recognized Text</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.subtitle}>Text to Speech:</Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={setInputText}
+          value={inputText}
+          placeholder="Enter text to speak"
+        />
+        <TouchableOpacity style={styles.button} onPress={speakInputText}>
+          <Text style={styles.buttonText}>Speak Input Text</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: '#F5FCFF',
   },
-  sectionTitle: {
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  sectionDescription: {
-    marginTop: 8,
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  text: {
     fontSize: 18,
-    fontWeight: '400',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  input: {
+    height: 40,
+    width: '80%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
