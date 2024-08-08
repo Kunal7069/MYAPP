@@ -49,7 +49,7 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Speech Recognition App</Text>
+        <Text style={styles.title}>Speech Recognition App:</Text>
         
         <Text style={styles.subtitle}>Speech to Text:</Text>
         <Text style={styles.text}>Recognized Text: {recognizedText}</Text>
@@ -65,7 +65,7 @@ const App = () => {
           <Text style={styles.buttonText}>Speak Recognized Text</Text>
         </TouchableOpacity>
 
-        <Text style={styles.subtitle}>Text to Speech:</Text>
+        <Text style={styles.subtitle}>Text to Speech</Text>
         <TextInput
           style={styles.input}
           onChangeText={setInputText}
